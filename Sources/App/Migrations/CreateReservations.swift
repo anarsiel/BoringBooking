@@ -14,7 +14,11 @@ struct CreateReservations: Migration {
     func prepare(on database: Database) -> EventLoopFuture<Void> {
         database.schema("reservations")
             .id()
-            .field("userId", .uuid, .required, .references("users", "id"))
+            .field("restaurant_id", .uuid, .required, .references("restaurants", "id"))
+            .field("table_id", .uuid, .required, .references("tables", "id"))
+            .field("user_id", .uuid, .required, .references("users", "id"))
+            .field("start_timestamp", .string, .required)
+            .field("end_timestamp", .string, .required)
             .field("comment", .string)
             .create()
     }

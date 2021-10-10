@@ -17,17 +17,39 @@ final class Reservation: Model, Content {
     @ID(key: .id)
     var id: UUID?
     
-    @Parent(key: "userId")
+    @Parent(key: "restaurant_id")
+    var restaurant: Restaurant
+    
+    @Parent(key: "table_id")
+    var table: Table
+    
+    @Parent(key: "user_id")
     var user: User
+    
+    @Field(key: "start_timestamp")
+    var startTimestamp: String
+    
+    @Field(key: "end_timestamp")
+    var endTimestamp: String
     
     @Field(key: "comment")
     var comment: String?
     
     init(){}
     
-    init(id: UUID? = nil, user: User, comment: String? = nil) {
+    init(id: UUID? = nil,
+         restaurant: Restaurant,
+         table: Table,
+         user: User,
+         startTimestamp: String,
+         endTimestamp: String,
+         comment: String? = nil) {
         self.id = id
+        self.restaurant = restaurant
+        self.table = table
         self.user = user
+        self.startTimestamp = startTimestamp
+        self.endTimestamp = endTimestamp
         self.comment = comment
     }
 }

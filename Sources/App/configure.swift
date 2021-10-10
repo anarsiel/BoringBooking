@@ -18,6 +18,8 @@ public func configure(_ app: Application) throws {
     )
 
     app.migrations.add(CreateUsers())
+    app.migrations.add(CreateRestaurants())
+    app.migrations.add(CreateTables())
     app.migrations.add(CreateReservations())
 
     // register routes
