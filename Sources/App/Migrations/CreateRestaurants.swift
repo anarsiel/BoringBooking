@@ -1,8 +1,19 @@
-//
-//  File.swift
-//  
-//
-//  Created by Blagoi on 09.10.2021.
-//
-
 import Foundation
+import Fluent
+import FluentPostgresDriver
+
+struct CreateRestaurants: Migration {
+    
+    func prepare(on database: Database) -> EventLoopFuture<Void> {
+        database.schema("restaurants")
+            .id()
+            .field("name", .string, .required)
+            .unique(on: "name")
+            .create()
+    }
+    
+    // undo
+    func revert(on database: Database) -> EventLoopFuture<Void> {
+        database.schema("restaurants").delete()
+    }
+}
