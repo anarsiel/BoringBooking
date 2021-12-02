@@ -12,6 +12,14 @@ struct UsersController {
         return User.find(id, on: req.db).unwrap(or: Abort(.notFound))
     }
     
+    func getByLogin(req: Request) -> EventLoopFuture<User> {
+        let login = String(req.parameters.get("login")!)
+        return User.query(on: req.db)
+            .filter(\.$login == login)
+            .first()
+            .unwrap(or: Abort(.notFound))
+    }
+    
     func create(req: Request) throws -> EventLoopFuture<User> {
         let user = try req.content.decode(User.self)
         return user.create(on: req.db).map {user}
