@@ -13,6 +13,13 @@ struct ReservationsController {
         return Reservation.find(id, on: req.db).unwrap(or: Abort(.notFound))
     }
     
+    func getByUserId(req: Request) -> EventLoopFuture<[Reservation]> {
+        let id = UUID(req.parameters.get("id")!)!
+        return Reservation.query(on: req.db)
+            .filter(\.$user.$id == id)
+            .all()
+    }
+    
     func create(req: Request) throws -> EventLoopFuture<Reservation> {
         let reservation = try req.content.decode(Reservation.self)
         return reservation.create(on: req.db).map {reservation}
