@@ -14,9 +14,10 @@ struct ReservationsController {
     }
     
     func getByUserId(req: Request) -> EventLoopFuture<[Reservation]> {
-        let id = UUID(req.parameters.get("id")!)!
+        let user = try! req.auth.require(User.self)
+        
         return Reservation.query(on: req.db)
-            .filter(\.$user.$id == id)
+            .filter(\.$user.$id == user.id!)
             .all()
     }
     

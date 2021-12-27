@@ -3,7 +3,7 @@ import Vapor
 
 func reservationRoutes(_ app: Application) throws {
     
-    let reservations = app.grouped("reservations")
+    let reservations = app.grouped("reservations").grouped(JWTBearerAuthenticator())
     let reservationsController = ReservationsController()
     
     reservations.get(use: reservationsController.getAll)
