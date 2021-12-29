@@ -1,18 +1,22 @@
 import Foundation
 import Fluent
 import Vapor
+import JWT
 
 struct UsersController {
-    func getAll(req: Request) -> EventLoopFuture<[User]> {
+    func getAll(req: Request) throws -> EventLoopFuture<[User]> {
+        let _ = try req.auth.require(User.self)
         return User.query(on: req.db).all()
     }
     
-    func getById(req: Request) -> EventLoopFuture<User> {
+    func getById(req: Request) throws -> EventLoopFuture<User> {
+        let _ = try req.auth.require(User.self)
         let id = UUID(req.parameters.get("id")!)
         return User.find(id, on: req.db).unwrap(or: Abort(.notFound))
     }
     
-    func getByLogin(req: Request) -> EventLoopFuture<User> {
+    func getByLogin(req: Request) throws -> EventLoopFuture<User> {
+        let _ = try req.auth.require(User.self)
         let login = String(req.parameters.get("login")!)
         return User.query(on: req.db)
             .filter(\.$login == login)
@@ -22,7 +26,33 @@ struct UsersController {
     
     func create(req: Request) throws -> EventLoopFuture<User> {
         let user = try req.content.decode(User.self)
+        user.admin = false
         return user.create(on: req.db).map {user}
+    }
+    
+    func createAdmin(req: Request) throws -> EventLoopFuture<User> {
+        let user = try req.content.decode(User.self)
+        
+        if (!checkKeyWord(req: req)) {
+            throw Abort(.unauthorized, reason: "Wrong key-word")
+        }
+        
+        user.admin = true
+        return user.create(on: req.db).map {user}
+    }
+    
+    func checkKeyWord(req: Request) -> Bool {
+        var keyWord: String? = nil
+        
+        for kv in req.headers {
+            if (kv.0 == "Key-Word") {
+                keyWord = kv.1
+            }
+        }
+        
+        let x = try! Bcrypt.hash("239")
+        
+        return keyWord == x
     }
     
     func login(req: Request) throws -> EventLoopFuture<String> {
@@ -46,6 +76,8 @@ struct UsersController {
     }
     
     func deleteById(req: Request) throws -> EventLoopFuture<HTTPStatus> {
+        let _ = try req.auth.require(User.self)
+        
         guard let id = req.parameters.get("id", as: UUID.self) else {
             throw Abort(.badRequest)
         }
@@ -57,14 +89,13 @@ struct UsersController {
     
     func me(req: Request) throws -> EventLoopFuture<Me> {
         let user = try req.auth.require(User.self)
-        let login = user.login
         
         return User.query(on: req.db)
-            .filter(\.$login == login)
+            .filter(\.$login == user.login)
             .first()
             .unwrap(or: Abort(.notFound))
             .map { usr in
-                return Me(id: UUID(), login: login)
+                return Me(id: user.id, login: user.login)
             }
     }
         

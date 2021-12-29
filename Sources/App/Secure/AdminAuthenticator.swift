@@ -14,7 +14,7 @@ struct AdminAuthenticator: JWTAuthenticator {
     
     func authenticate(jwt: Payload, for request: Request) -> EventLoopFuture<Void> {
         do {
-            try jwt.verify(using: request.application.jwt.signers.get()!)
+            try jwt.verifyAdmin(using: request.application.jwt.signers.get()!)
             
             return User
                 .find(jwt.id, on: request.db)

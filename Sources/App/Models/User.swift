@@ -18,6 +18,9 @@ final class User: Model, Content {
     @Field(key: "password")
     var password: String
     
+    @Field(key: "admin")
+    var admin: Bool?
+    
     @Children(for: \.$user)
     var reservations: [Reservation]
     
@@ -58,7 +61,7 @@ extension User {
         let exp = ExpirationClaim(value: expDate)
         
         return try app.jwt.signers.get(kid: .private)!
-            .sign(MyJwtPayload(id: self.id, login: self.login, exp: exp)
+            .sign(MyJwtPayload(id: self.id, login: self.login, admin: self.admin!, exp: exp)
         )
     }
 }

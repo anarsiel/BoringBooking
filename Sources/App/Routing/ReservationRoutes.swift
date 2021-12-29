@@ -7,10 +7,10 @@ func reservationRoutes(_ app: Application) throws {
     let reservations = app.grouped("reservations").grouped(UserAuthenticator())
     
     reservations.group("me") { rsrv in
-        rsrv.get("user", ":id", use: reservationsController.getByUserId)
+        rsrv.get("get", "id", ":id", use: reservationsController.getById)
+        rsrv.get("get", "userId", use: reservationsController.getByUserId)
         rsrv.post("create", use: reservationsController.create)
-        rsrv.delete("delete", ":id", use: reservationsController.deleteById)
-        rsrv.get(":id", use: reservationsController.getById)
+        rsrv.delete("delete", "id", ":id", use: reservationsController.deleteById)
     }
     
     reservations.grouped(AdminAuthenticator()).group("admin") { rsrv in

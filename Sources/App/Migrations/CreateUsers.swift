@@ -9,6 +9,7 @@ struct CreateUsers: Migration {
             .id()
             .field("login", .string)
             .field("password", .string)
+            .field("admin", .bool)
             .unique(on: "login")
             .create()
     }

@@ -8,9 +8,7 @@ func usersRoutes(_ app: Application) throws {
     
     users.post("create", use: usersController.create)
     users.post("login", use: usersController.login)
-    
-    // TODO to admin
-    users.get("byLogin", ":login", use: usersController.getByLogin)
+    users.post("create", "admin", use: usersController.createAdmin)
     
     users.grouped(UserAuthenticator()).group("me") { usr in
         usr.get(use: usersController.me)
@@ -18,7 +16,8 @@ func usersRoutes(_ app: Application) throws {
     
     users.grouped(AdminAuthenticator()).group("admin") { usr in
         usr.get(use: usersController.getAll)
-        usr.get(":id", use: usersController.getById)
-        usr.delete("delete", ":id", use: usersController.deleteById)
+        usr.get("find", "id", ":id", use: usersController.getById)
+        usr.get("find", "login", ":login", use: usersController.getByLogin)
+        usr.delete("delete", "id", ":id", use: usersController.deleteById)
     }
 }
