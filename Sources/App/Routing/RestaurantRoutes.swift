@@ -3,11 +3,19 @@ import Vapor
 
 func restaurantRoutes(_ app: Application) throws {
     
-    let restaurants = app.grouped("restaurants")
     let restaurantsController = RestaurantsController()
+    let restaurants = app.grouped("restaurants").grouped(UserAuthenticator())
     
-    restaurants.get(use: restaurantsController.getAll)
-    restaurants.get(":id", use: restaurantsController.getById)
-    restaurants.post("create", use: restaurantsController.create)
-    restaurants.delete("delete", ":id", use: restaurantsController.deleteById)
+    // TODO to ME
+    
+    
+    restaurants.group("me") { rstr in
+        rstr.get(":id", use: restaurantsController.getById)
+        rstr.get(use: restaurantsController.getAll)
+    }
+    
+    restaurants.grouped(AdminAuthenticator()).group("admin") { rstr in
+        rstr.post("create", use: restaurantsController.create)
+        rstr.delete("delete", ":id", use: restaurantsController.deleteById)
+    }
 }

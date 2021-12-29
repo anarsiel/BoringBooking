@@ -3,12 +3,17 @@ import Vapor
 
 func reservationRoutes(_ app: Application) throws {
     
-    let reservations = app.grouped("reservations").grouped(JWTBearerAuthenticator())
     let reservationsController = ReservationsController()
+    let reservations = app.grouped("reservations").grouped(UserAuthenticator())
     
-    reservations.get(use: reservationsController.getAll)
-    reservations.get(":id", use: reservationsController.getById)
-    reservations.get("user", ":id", use: reservationsController.getByUserId)
-    reservations.post("create", use: reservationsController.create)
-    reservations.delete("delete", ":id", use: reservationsController.deleteById)
+    reservations.group("me") { rsrv in
+        rsrv.get("user", ":id", use: reservationsController.getByUserId)
+        rsrv.post("create", use: reservationsController.create)
+        rsrv.delete("delete", ":id", use: reservationsController.deleteById)
+        rsrv.get(":id", use: reservationsController.getById)
+    }
+    
+    reservations.grouped(AdminAuthenticator()).group("admin") { rsrv in
+        rsrv.get(use: reservationsController.getAll)
+    }
 }

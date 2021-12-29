@@ -3,10 +3,6 @@ import FluentPostgresDriver
 import Vapor
 import JWT
 
-extension String {
-    var bytes: [UInt8] { .init(self.utf8) }
-}
-
 extension JWKIdentifier {
     static let `public` = JWKIdentifier(string: "public")
     static let `private` = JWKIdentifier(string: "private")
@@ -14,7 +10,7 @@ extension JWKIdentifier {
 
 public func configure(_ app: Application) throws {
     if let databaseURL = Environment.get("DATABASE_URL"), var postgresConfig = PostgresConfiguration(url: databaseURL) {
-        postgresConfig.tlsConfiguration = .forClient(certificateVerification: .none)
+        postgresConfig.tlsConfiguration = .makeClientConfiguration()
         app.databases.use(.postgres(
             configuration: postgresConfig
         ), as: .psql)
@@ -36,11 +32,11 @@ public func configure(_ app: Application) throws {
     app.migrations.add(CreateTables())
     app.migrations.add(CreateReservations())
     
-    let privateKey = try String(contentsOfFile: app.directory.workingDirectory + "jwt.key")
-    let privateSigner = try JWTSigner.rs256(key: .private(pem: privateKey.bytes))
+    let privateKey = try String(contentsOfFile: app.directory.workingDirectory + "jwt.key").data(using: .utf8)!
+    let privateSigner = try JWTSigner.rs256(key: .private(pem: privateKey))
     
-    let publicKey = try String(contentsOfFile: app.directory.workingDirectory + "jwt.key.pub")
-    let publicSigner = try JWTSigner.rs256(key: .public(pem: publicKey.bytes))
+    let publicKey = try String(contentsOfFile: app.directory.workingDirectory + "jwt.key.pub").data(using: .utf8)!
+    let publicSigner = try JWTSigner.rs256(key: .public(pem: publicKey))
     
     app.jwt.signers.use(privateSigner, kid: .private)
     app.jwt.signers.use(publicSigner, kid: .public, isDefault: true)

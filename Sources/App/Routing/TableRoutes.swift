@@ -3,13 +3,18 @@ import Vapor
 
 func tableRoutes(_ app: Application) throws {
     
-    let tables = app.grouped("tables")
     let tablesController = TablesController()
+    let tables = app.grouped("tables").grouped(UserAuthenticator())
     
-    tables.get(use: tablesController.getAll)
-    tables.get(":id", use: tablesController.getById)
-    tables.get("filter", ":restId", ":cosy", ":silent", ":nearWindow", ":kitchenView", use: tablesController.getAndFilterByType)
-    tables.post("create", use: tablesController.create)
-    tables.delete("delete", ":id", use: tablesController.deleteById)
+    tables.group("me") { tbls in
+        tbls.get(":id", use: tablesController.getById)
+        tbls.get("filter", ":restId", ":cosy", ":silent", ":nearWindow", ":kitchenView", use: tablesController.getAndFilterByType)
+    }
+    
+    tables.grouped(AdminAuthenticator()).group("admin") { tbls in
+        tbls.get(use: tablesController.getAll)
+        tbls.post("create", use: tablesController.create)
+        tbls.delete("delete", ":id", use: tablesController.deleteById)
+    }
 }
 
