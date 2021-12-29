@@ -2,6 +2,7 @@ import Foundation
 import Fluent
 import Vapor
 import JWT
+import CBcrypt
 
 struct UsersController {
     func getAll(req: Request) throws -> EventLoopFuture<[User]> {
@@ -33,7 +34,7 @@ struct UsersController {
     func createAdmin(req: Request) throws -> EventLoopFuture<User> {
         let user = try req.content.decode(User.self)
         
-        if (!checkKeyWord(req: req)) {
+        if (try !checkKeyWord(req: req)) {
             throw Abort(.unauthorized, reason: "Wrong key-word")
         }
         
@@ -41,8 +42,8 @@ struct UsersController {
         return user.create(on: req.db).map {user}
     }
     
-    func checkKeyWord(req: Request) -> Bool {
-        var keyWord: String? = nil
+    func checkKeyWord(req: Request) throws -> Bool {
+        var keyWord: String = ""
         
         for kv in req.headers {
             if (kv.0 == "Key-Word") {
@@ -50,9 +51,10 @@ struct UsersController {
             }
         }
         
-        let x = try! Bcrypt.hash("239")
-        
-        return keyWord == x
+        return try Bcrypt.verify(
+            keyWord,
+            created: try Bcrypt.hash("abobus")
+        )
     }
     
     func login(req: Request) throws -> EventLoopFuture<String> {
