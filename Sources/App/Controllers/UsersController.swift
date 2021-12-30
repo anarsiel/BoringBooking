@@ -12,13 +12,13 @@ struct UsersController {
     
     func getById(req: Request) throws -> EventLoopFuture<User> {
         let _ = try req.auth.require(User.self)
-        let id = UUID(req.parameters.get("id")!)
+        let id = UUID(req.parameters.get("id") ?? "")
         return User.find(id, on: req.db).unwrap(or: Abort(.notFound))
     }
     
     func getByLogin(req: Request) throws -> EventLoopFuture<User> {
         let _ = try req.auth.require(User.self)
-        let login = String(req.parameters.get("login")!)
+        let login = String(req.parameters.get("login") ?? "")
         return User.query(on: req.db)
             .filter(\.$login == login)
             .first()

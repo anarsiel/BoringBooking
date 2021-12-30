@@ -10,7 +10,7 @@ struct RestaurantsController {
     
     func getById(req: Request) throws -> EventLoopFuture<Restaurant> {
         let _ = try req.auth.require(User.self)
-        let id = UUID(req.parameters.get("id")!)
+        let id = UUID(req.parameters.get("id") ?? "")
         
         return Restaurant.find(id, on: req.db).unwrap(or: Abort(.notFound))
     }

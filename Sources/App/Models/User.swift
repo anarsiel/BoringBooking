@@ -60,7 +60,7 @@ extension User {
         let exp = ExpirationClaim(value: expDate)
         
         return try app.jwt.signers.get(kid: .private)!
-            .sign(MyJwtPayload(id: self.id, login: self.login, admin: self.admin!, exp: exp)
+            .sign(MyJwtPayload(id: self.id, login: self.login, admin: self.admin ?? false, exp: exp)
         )
     }
 }

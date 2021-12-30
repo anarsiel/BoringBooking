@@ -11,22 +11,45 @@ struct ReservationsController {
     
     func getById(req: Request) throws -> EventLoopFuture<Reservation> {
         let _ = try req.auth.require(User.self)
-        let id = UUID(req.parameters.get("id")!)
+        let id = UUID(req.parameters.get("id") ?? "")
         return Reservation.find(id, on: req.db).unwrap(or: Abort(.notFound))
     }
     
     func getByUserId(req: Request) throws -> EventLoopFuture<[Reservation]> {
         let user = try req.auth.require(User.self)
+        let userId = user.id!
         
         return Reservation.query(on: req.db)
-            .filter(\.$user.$id == user.id!)
+            .filter(\.$user.$id == userId)
             .all()
     }
     
     func create(req: Request) throws -> EventLoopFuture<Reservation> {
-        let _ = try req.auth.require(User.self)
-        let reservation = try req.content.decode(Reservation.self)
-        return reservation.create(on: req.db).map {reservation}
+        let user = try req.auth.require(User.self)
+        
+        let reservationPl = try req.content.decode(ReservationPayload.self)
+        let restaurant = Restaurant.query(on: req.db)
+            .filter(\.$id == UUID(reservationPl.restaurantId) ?? UUID())
+            .first()
+        let table = Table.query(on: req.db)
+            .filter(\.$id == UUID(reservationPl.tableId) ?? UUID())
+            .first()
+        
+        return restaurant.flatMap { r in
+            table.flatMap { t in
+                let reservation = Reservation(
+                    id: UUID(),
+                    restaurant: Restaurant(),
+                    table: Table(),
+                    user: user
+                )
+                
+                return reservation.save(on: req.db).map {
+                    reservation
+                    
+                }
+            }
+        }
     }
     
     func deleteById(req: Request) throws -> EventLoopFuture<HTTPStatus> {

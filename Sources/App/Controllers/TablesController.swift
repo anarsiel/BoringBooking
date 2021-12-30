@@ -10,25 +10,25 @@ struct TablesController {
     
     func getById(req: Request) throws -> EventLoopFuture<Table> {
         let _ = try req.auth.require(User.self)
-        let id = UUID(req.parameters.get("id")!)
+        let id = UUID(req.parameters.get("id") ?? "")
         return Table.find(id, on: req.db).unwrap(or: Abort(.notFound))
     }
     
     func getAndFilterByType(req: Request) throws -> EventLoopFuture<[Table]> {
         let _ = try req.auth.require(User.self)
         
-        let restId = UUID(req.parameters.get("restId")!)
-        let cosy = Bool(req.parameters.get("cosy")!)
-        let silent = Bool(req.parameters.get("silent")!)
-        let nearWindow = Bool(req.parameters.get("nearWindow")!)
-        let kitchenView = Bool(req.parameters.get("kitchenView")!)
+        let restId = UUID(req.parameters.get("restId") ?? "") ?? UUID()
+        let cosy = Bool(req.parameters.get("cosy") ?? "false") ?? false
+        let silent = Bool(req.parameters.get("silent") ?? "false") ?? false
+        let nearWindow = Bool(req.parameters.get("nearWindow") ?? "false") ?? false
+        let kitchenView = Bool(req.parameters.get("kitchenView") ?? "false") ?? false
         
         return Table.query(on: req.db)
-            .filter(\.$restaurant.$id == restId!)
-            .filter(\.$tableType.$cosy >= cosy!)
-            .filter(\.$tableType.$silent >= silent!)
-            .filter(\.$tableType.$nearWindow >= nearWindow!)
-            .filter(\.$tableType.$kitchenView >= kitchenView!)
+            .filter(\.$restaurant.$id == restId)
+            .filter(\.$tableType.$cosy >= cosy)
+            .filter(\.$tableType.$silent >= silent)
+            .filter(\.$tableType.$nearWindow >= nearWindow)
+            .filter(\.$tableType.$kitchenView >= kitchenView)
             .all()
     }
     
