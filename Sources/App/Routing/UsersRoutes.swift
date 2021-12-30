@@ -8,7 +8,7 @@ func usersRoutes(_ app: Application) throws {
     
     users.post("create", use: usersController.create)
     users.post("login", use: usersController.login)
-//    users.post("create", "admin", use: usersController.createAdmin)
+    users.post("create", "admin", use: usersController.createAdmin)
     
     users.grouped(UserAuthenticator()).group("me") { usr in
         usr.get(use: usersController.me)
