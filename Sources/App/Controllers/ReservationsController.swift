@@ -25,31 +25,9 @@ struct ReservationsController {
     }
     
     func create(req: Request) throws -> EventLoopFuture<Reservation> {
-        let user = try req.auth.require(User.self)
-        
-        let reservationPl = try req.content.decode(ReservationPayload.self)
-        let restaurant = Restaurant.query(on: req.db)
-            .filter(\.$id == UUID(reservationPl.restaurantId) ?? UUID())
-            .first()
-        let table = Table.query(on: req.db)
-            .filter(\.$id == UUID(reservationPl.tableId) ?? UUID())
-            .first()
-        
-        return restaurant.flatMap { r in
-            table.flatMap { t in
-                let reservation = Reservation(
-                    id: UUID(),
-                    restaurant: Restaurant(),
-                    table: Table(),
-                    user: user
-                )
-                
-                return reservation.save(on: req.db).map {
-                    reservation
-                    
-                }
-            }
-        }
+        let _ = try req.auth.require(User.self)
+        let reservation = try req.content.decode(Reservation.self)
+        return reservation.create(on: req.db).map {reservation}
     }
     
     func deleteById(req: Request) throws -> EventLoopFuture<HTTPStatus> {
