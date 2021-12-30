@@ -40,6 +40,8 @@ public func configure(_ app: Application) throws {
     
     app.jwt.signers.use(privateSigner, kid: .private)
     app.jwt.signers.use(publicSigner, kid: .public, isDefault: true)
+    
+    app.passwords.use(.bcrypt)
 
     // register routes
     try reservationRoutes(app)

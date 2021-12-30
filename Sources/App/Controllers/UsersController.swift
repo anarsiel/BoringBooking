@@ -28,6 +28,7 @@ struct UsersController {
     func create(req: Request) throws -> EventLoopFuture<User> {
         let user = try req.content.decode(User.self)
         user.admin = false
+        user.password = try req.password.hash(user.password)
         return user.create(on: req.db).map {user}
     }
     
@@ -39,6 +40,7 @@ struct UsersController {
         }
         
         user.admin = true
+        user.password = try req.password.hash(user.password)
         return user.create(on: req.db).map {user}
     }
     

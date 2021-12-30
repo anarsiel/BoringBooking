@@ -14,8 +14,7 @@ final class User: Model, Content {
     @Field(key: "login")
     var login: String
     
-    // TODO: store passwordHash not password
-    @Field(key: "password")
+    @Field(key: "passwordHash")
     var password: String
     
     @Field(key: "admin")
@@ -26,7 +25,7 @@ final class User: Model, Content {
     
     init(){}
     
-    init(id: UUID? = nil, login: String, password: String, reservations: [Reservation]) {
+    init(id: UUID? = nil, login: String, passwordHash: String, reservations: [Reservation]) {
         self.id = id
         self.login = login
         self.password = password
@@ -46,7 +45,7 @@ extension User: ModelAuthenticatable {
     func verify(password: String) throws -> Bool {
         return try Bcrypt.verify(
             password,
-            created: try Bcrypt.hash(self.password)
+            created: self.password
         )
     }
 }

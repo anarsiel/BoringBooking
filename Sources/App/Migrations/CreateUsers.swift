@@ -8,7 +8,7 @@ struct CreateUsers: Migration {
         database.schema("users")
             .id()
             .field("login", .string)
-            .field("password", .string)
+            .field("passwordHash", .string)
             .field("admin", .bool)
             .unique(on: "login")
             .create()
